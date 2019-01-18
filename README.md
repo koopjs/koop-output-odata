@@ -1,2 +1,3 @@
 # koop-output-odata
-OData output plugin for Koop
+This output-services plugin accepts OData query parameters and responds with OData formatted XML.
+
