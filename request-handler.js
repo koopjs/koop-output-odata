@@ -23,14 +23,23 @@ function requestHandler (req, res) {
   })
 
   if (invalidQueryParam) {
-    const errorXml = js2xmlparser.parse('error', { code: 400, message: `"${invalidQueryParam}" is not a supported OData query parameter.` })
+    const errorXml = js2xmlparser.parse('error', { 
+      code: 400,
+      message: `"${invalidQueryParam}" is not a supported OData query parameter.`
+    })
     return res.status(400).send(errorXml)
   }
   
   req.query = paramsToErsi(req.query)
 
   this.model.pull(req, (err, geojson) => {
-    if (err) return res.status(err.code || 500).json({ error: err.message })
+    if (err){
+      const errorXml = js2xmlparser.parse('error', { 
+        code: err.code || 500,
+        message: err.message
+      })
+      return res.status(400).send(errorXml)
+    }
 
     // send data to winnow; filter the data according to query (possibly redundant when provider is AGOL, but would be necessary for other providers)
     const options = _.cloneDeep(req.query)
