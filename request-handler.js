@@ -1,5 +1,8 @@
-// const parser = require('./utils/odata-parser')
+const paramsToErsi = require('./utils/odata-to-esri-params')
+const esriLookup = require('./utils/esri-translations-lookup')
 const js2xmlparser = require('js2xmlparser')
+const winnow = require('winnow')
+const _ = require('lodash')
 
 /**
  * Handle a request
@@ -7,25 +10,39 @@ const js2xmlparser = require('js2xmlparser')
  * @param {object} res - Express response object
  */
 function requestHandler (req, res) {
-  // transform the query parameters
+  res.set('Content-Type', 'text/xml')
+  
+  // transform the query parameters and add to request object in case needed in the provider
+  let invalidQueryParam
 
-  // validate query parameters
-
-  this.model.pull(req, (e, geojson) => {
-    if (e) res.status(e.code || 500).json({ error: e.message })
-    else {
-      // send data to winnow; filter the data according to query (possibly redundant when provider is AGOL, but would be necessary for other providers)
-
-      const records = geojson.features.map(function (feature) {
-        return feature.properties
-      })
-      const xml = js2xmlparser('d', { properties: records })
-      res.set('Content-Type', 'text/xml')
-      res.status(200).send(xml)
+  Object.keys(req.query).some(key => {
+    if (!esriLookup[key]) {
+      invalidQueryParam = key
+      return true
     }
   })
 
-  res.status(200).json({ message: 'success' })
+  if (invalidQueryParam) {
+    const errorXml = js2xmlparser.parse('error', { code: 400, message: `"${invalidQueryParam}" is not a supported OData query parameter.` })
+    return res.status(400).send(errorXml)
+  }
+  
+  req.query = paramsToErsi(req.query)
+
+  this.model.pull(req, (err, geojson) => {
+    if (err) return res.status(err.code || 500).json({ error: err.message })
+
+    // send data to winnow; filter the data according to query (possibly redundant when provider is AGOL, but would be necessary for other providers)
+    const options = _.cloneDeep(req.query)
+    options.toEsri = false
+    const filteredGeojson = winnow.query(geojson, options)
+    const records = filteredGeojson.features.map(function (feature) {
+      return feature.properties
+    })
+
+    const xml = js2xmlparser.parse('d', { properties: records })
+    res.status(200).send(xml)
+  })
 }
 
 module.exports = requestHandler

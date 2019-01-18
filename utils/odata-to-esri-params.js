@@ -11,7 +11,7 @@ module.exports = function odataToEsri (queryParams) {
 
   // Loop through translations and apply those appropriate into a new query object
   Object.keys(ast).forEach(key => {
-    if(esriTranslator[key]) esriQuery[esriTranslator[key].esri] = esriTranslator[key].translate(ast[key])
+    if (esriTranslator[key]) esriQuery[esriTranslator[key].esri] = esriTranslator[key].translate(ast[key])
   })
 
   return esriQuery

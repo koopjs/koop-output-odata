@@ -13,9 +13,9 @@ test('convert odata params object to esri params object', spec => {
   const esriQuery = {}
 
   Object.keys(fixtureAst).forEach(key => {
-    if(esriLookup[key]) esriQuery[esriLookup[key].esri] = esriLookup[key].translate(fixtureAst[key])
+    if (esriLookup[key]) esriQuery[esriLookup[key].esri] = esriLookup[key].translate(fixtureAst[key])
   })
-  
+
   const expected = {
     outFields: 'foo',
     resultOffset: 5,
