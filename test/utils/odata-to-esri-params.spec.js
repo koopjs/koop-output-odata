@@ -1,6 +1,5 @@
 const test = require('tape')
 const odataToEsri = require('../../utils/odata-to-esri-params')
-const querystring = require('query-string')
 const fixtureParams = {
   '$select': 'foo',
   '$skip': 5,
@@ -14,5 +13,5 @@ test('test', spec => {
     resultOffset: 5,
     resultRecordCount: 10
   }
-  spec.ok(true, 'stub')
+  spec.deepEquals(esriParams, expected, 'should convert OData query params object to Esri params object')
 })

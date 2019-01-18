@@ -1,22 +1,18 @@
-const parser = require('odata-parser')
+const odataParser = require('odata-parser')
 const querystring = require('query-string')
-const translations = require('./translations')
+const esriTranslator = require('./esri-translations-lookup')
 
 module.exports = function odataToEsri (queryParams) {
   if (!Object.keys(queryParams).length) return queryParams
   // Convert the query back to a querystring (parsing library expects that format) and parse it
   const str = querystring.stringify(queryParams, { encode: false })
-  const ast = parser.parse(str)
+  const ast = odataParser.parse(str)
   const esriQuery = {}
 
-  console.log(queryParams, ast)
-
   // Loop through translations and apply those appropriate into a new query object
-  translations.forEach(function (translation) {
-    if (ast[translation.odata] !== undefined) {
-      esriQuery[translation.esri] = translation.translate(ast[translation.odata])
-    }
+  Object.keys(ast).forEach(key => {
+    if(esriTranslator[key]) esriQuery[esriTranslator[key].esri] = esriTranslator[key].translate(ast[key])
   })
-  // console.log(esriQuery);
+
   return esriQuery
 }

@@ -11,30 +11,26 @@ var enclose = function (val) {
   return typeof val === 'string' ? '\'' + val + '\'' : val
 }
 
-module.exports = [
-  {
-    odata: '$top',
+const lookup = {
+  $top: {
     esri: 'resultRecordCount',
     translate: function (val) {
       return val
     }
   },
-  {
-    odata: '$skip',
+  $skip: {
     esri: 'resultOffset',
     translate: function (val) {
       return val
     }
   },
-  {
-    odata: '$select',
+  $select: {
     esri: 'outFields',
     translate: function (val) {
       return val.join(', ')
     }
   },
-  {
-    odata: '$filter',
+  $filter: {
     esri: 'where',
     translate: function (val) {
       if (val.type === 'and' || val.type === 'or') {
@@ -52,4 +48,6 @@ module.exports = [
       }
     }
   }
-]
+}
+
+module.exports = lookup
