@@ -4,7 +4,7 @@
   "description": "Odata output-plugin for Koop",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "standard && tape test/**/*.js | tap-spec"
   },
   "repository": {
     "type": "git",
@@ -15,5 +15,15 @@
   "bugs": {
     "url": "https://github.com/koopjs/koop-output-odata/issues"
   },
-  "homepage": "https://github.com/koopjs/koop-output-odata#readme"
+  "homepage": "https://github.com/koopjs/koop-output-odata#readme",
+  "dependencies": {
+    "js2xmlparser": "^3.0.0",
+    "odata-parser": "^1.4.1",
+    "query-string": "^6.2.0"
+  },
+  "devDependencies": {
+    "standard": "^12.0.1",
+    "tap-spec": "^5.0.0",
+    "tape": "^4.9.2"
+  }
 }
