@@ -1,5 +1,5 @@
 const test = require('tape')
-const odataToEsri = require('../../utils/odata-to-esri-params')
+const odataToEsri = require('../../lib/odata-to-esri-params')
 const fixtureParams = {
   '$select': 'foo',
   '$skip': 5,

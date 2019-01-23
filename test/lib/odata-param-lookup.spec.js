@@ -1,5 +1,5 @@
 const test = require('tape')
-const esriLookup = require('../../utils/esri-translations-lookup')
+const esriLookup = require('../../lib/odata-param-lookup')
 const fixtureAst = {
   '$select': ['foo'],
   '$skip': 5,

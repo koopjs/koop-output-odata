@@ -1,5 +1,5 @@
-const paramsToErsi = require('./utils/odata-to-esri-params')
-const esriLookup = require('./utils/esri-translations-lookup')
+const paramsToErsi = require('./lib/odata-to-esri-params')
+const hasValidOdataParams = require('./lib/odata-param-validator')
 const js2xmlparser = require('js2xmlparser')
 const winnow = require('winnow')
 const _ = require('lodash')
@@ -10,26 +10,10 @@ const _ = require('lodash')
  * @param {object} res - Express response object
  */
 function requestHandler (req, res) {
-  res.set('Content-Type', 'text/xml')
+  // Reject the request if the query parameters are not supported
+  if (!hasValidOdataParams(req.query, res)) return
 
-  // transform the query parameters and add to request object in case needed in the provider
-  let invalidQueryParam
-
-  Object.keys(req.query).some(key => {
-    if (!esriLookup[key]) {
-      invalidQueryParam = key
-      return true
-    }
-  })
-
-  if (invalidQueryParam) {
-    const errorXml = js2xmlparser.parse('error', {
-      code: 400,
-      message: `"${invalidQueryParam}" is not a supported OData query parameter.`
-    })
-    return res.status(400).send(errorXml)
-  }
-
+  // Transform the OData query parameters to Esri query parameters
   req.query = paramsToErsi(req.query)
 
   this.model.pull(req, (err, geojson) => {
@@ -41,15 +25,19 @@ function requestHandler (req, res) {
       return res.status(400).send(errorXml)
     }
 
-    // send data to winnow; filter the data according to query (possibly redundant when provider is AGOL, but would be necessary for other providers)
+    // send data to winnow; filter the data according to query
     const options = _.cloneDeep(req.query)
     options.toEsri = false
     const filteredGeojson = winnow.query(geojson, options)
+
+    // Extract geojson properties to an array
     const records = filteredGeojson.features.map(function (feature) {
       return feature.properties
     })
 
+    // Convert the properties array to OData XML and respond
     const xml = js2xmlparser.parse('d', { properties: records })
+    res.set('Content-Type', 'text/xml')
     res.status(200).send(xml)
   })
 }
