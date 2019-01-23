@@ -11,7 +11,7 @@ const _ = require('lodash')
  */
 function requestHandler (req, res) {
   res.set('Content-Type', 'text/xml')
-  
+
   // transform the query parameters and add to request object in case needed in the provider
   let invalidQueryParam
 
@@ -23,18 +23,18 @@ function requestHandler (req, res) {
   })
 
   if (invalidQueryParam) {
-    const errorXml = js2xmlparser.parse('error', { 
+    const errorXml = js2xmlparser.parse('error', {
       code: 400,
       message: `"${invalidQueryParam}" is not a supported OData query parameter.`
     })
     return res.status(400).send(errorXml)
   }
-  
+
   req.query = paramsToErsi(req.query)
 
   this.model.pull(req, (err, geojson) => {
-    if (err){
-      const errorXml = js2xmlparser.parse('error', { 
+    if (err) {
+      const errorXml = js2xmlparser.parse('error', {
         code: err.code || 500,
         message: err.message
       })
