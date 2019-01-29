@@ -10,7 +10,7 @@ test('validate request params', spec => {
   }
   // Setup response object; embed tests
   const result = validateOdataParams(fixtureParams)
-  spec.equals(result, undefined, 'validates params')
+  spec.equals(result.validated, true, 'validates params')
 })
 
 test('validate request params - error', spec => {
