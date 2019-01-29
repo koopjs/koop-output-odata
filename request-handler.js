@@ -1,5 +1,5 @@
 const paramsToErsi = require('./lib/odata-to-esri-params')
-const hasValidOdataParams = require('./lib/odata-param-validator')
+const validateOdataParams = require('./lib/odata-param-validator')
 const js2xmlparser = require('js2xmlparser')
 const winnow = require('winnow')
 const _ = require('lodash')
@@ -11,7 +11,14 @@ const _ = require('lodash')
  */
 function requestHandler (req, res) {
   // Reject the request if the query parameters are not supported
-  if (!hasValidOdataParams(req.query, res)) return
+  const validatedParams = validateOdataParams(req.query)
+  if (validatedParams.error) {
+    res.set('Content-Type', 'text/xml')
+    return res.status(400).send(js2xmlparser.parse('error', {
+      code: 400,
+      message: validatedParams.error
+    }))
+  }
 
   // Transform the OData query parameters to Esri query parameters
   req.query = paramsToErsi(req.query)
@@ -22,7 +29,7 @@ function requestHandler (req, res) {
         code: err.code || 500,
         message: err.message
       })
-      return res.status(400).send(errorXml)
+      return res.status(err.code || 500).send(errorXml)
     }
 
     // send data to winnow; filter the data according to query
